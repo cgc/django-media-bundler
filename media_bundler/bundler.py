@@ -184,7 +184,7 @@ class PngSpriteBundle(Bundle):
         # of the last version of this bundle.
         if versioner:
             versioner.update_bundle_version(self)
-        self.generate_css(packing)
+        self.generate_css(packing, width, height)
 
     def _optimize_output(self):
         """Optimize the PNG with pngcrush."""
@@ -199,7 +199,7 @@ class PngSpriteBundle(Bundle):
                             '%s' % (proc.returncode, proc.stdout.read()))
         shutil.move(tmp_path, sprite_path)
 
-    def generate_css(self, packing):
+    def generate_css(self, packing, width, height):
         """Generate the background offset CSS rules."""
         with open(self.css_file, "w") as css:
             css.write("/* Generated classes for django-media-bundler sprites.  "
@@ -209,12 +209,18 @@ class PngSpriteBundle(Bundle):
             }
             css.write(self.make_css(None, props))
             for (left, top, box) in packing:
-                props = {
-                    "background-position": "%dpx %dpx" % (-left, -top),
-                    "width": "%dpx" % box.width,
-                    "height": "%dpx" % box.height,
-                }
-                css.write(self.make_css(os.path.basename(box.filename), props))
+                def genprops(left, top, width, height):
+                    return {
+                        "background-position": "%dpx %dpx" % (-left, -top),
+                        "width": "%dpx" % width,
+                        "height": "%dpx" % height,
+                    }
+                props = genprops(left, top, box.width, box.height)
+                hpdprops = genprops(left/2, top/2, box.width/2, box.height/2)
+                hpdprops["background-size"] = "%dpx, %dpx" % (width/2, height/2)
+                name = os.path.basename(box.filename)
+                css.write(self.make_css(name, props))
+                css.write(self.make_css("%s-hpd" % name, hpdprops))
 
     CSS_REGEXP = re.compile(r"[^a-zA-Z\-_]")
 
