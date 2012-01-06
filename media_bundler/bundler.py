@@ -176,6 +176,7 @@ class PngSpriteBundle(Bundle):
             # image is RGBA here.
             img = box.image
             mask = img if img.mode == "RGBA" else None
+            mask = None
             sprite.paste(img, (left, top), mask)
         sprite.save(self.get_bundle_path(), "PNG")
         self._optimize_output()
