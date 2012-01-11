@@ -205,20 +205,22 @@ class PngSpriteBundle(Bundle):
         with open(self.css_file, "w") as css:
             css.write("/* Generated classes for django-media-bundler sprites.  "
                       "Don't edit! */\n")
-            props = {
-                "background-image": "url('%s')" % self.get_bundle_url(),
-            }
+            props = [
+                ("background-image", "url('%s')" % self.get_bundle_url())
+            ]
             css.write(self.make_css(None, props))
             for (left, top, box) in packing:
                 def genprops(left, top, width, height):
-                    return {
-                        "background-position": "%dpx %dpx" % (-left, -top),
-                        "width": "%dpx" % width,
-                        "height": "%dpx" % height,
-                    }
+                    return [
+                        ("background-position", "%dpx %dpx" % (-left, -top)),
+                        ("width", "%dpx" % width),
+                        ("height", "%dpx" % height)
+                    ]
                 props = genprops(left, top, box.width, box.height)
                 hpdprops = genprops(left/2, top/2, box.width/2, box.height/2)
-                hpdprops["background-size"] = "%dpx, %dpx" % (width/2, height/2)
+                hpdprops.append(("background-size", "%dpx, %dpx" % (width/2, height/2)))
+                # -webkit-background-size must be after background-size to work on iOS 3/4
+                hpdprops.append(("-webkit-background-size", "%dpx %dpx" % (width/2, height/2)))
                 name = os.path.basename(box.filename)
                 css.write(self.make_css(name, props))
                 css.write(self.make_css("%s-hpd" % name, hpdprops))
@@ -236,7 +238,7 @@ class PngSpriteBundle(Bundle):
         # We try to format it nicely here in case the user actually looks at it.
         # If he wants it small, he'll bundle it up in his CssBundle.
         css_class = self.css_class_name(name)
-        css_propstr = "".join("     %s: %s;\n" % p for p in props.iteritems())
+        css_propstr = "".join("     %s: %s;\n" % p for p in props)
         return "\n.%s {\n%s}\n" % (css_class, css_propstr)
 
 
