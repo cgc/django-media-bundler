@@ -221,6 +221,7 @@ class PngSpriteBundle(Bundle):
                 hpdprops.append(("background-size", "%dpx, %dpx" % (width/2, height/2)))
                 # -webkit-background-size must be after background-size to work on iOS 3/4
                 hpdprops.append(("-webkit-background-size", "%dpx %dpx" % (width/2, height/2)))
+                hpdprops.append(("-moz-background-size", "%dpx %dpx" % (width/2, height/2)))
                 name = os.path.basename(box.filename)
                 css.write(self.make_css(name, props))
                 css.write(self.make_css("%s-hpd" % name, hpdprops))
